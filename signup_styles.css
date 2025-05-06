@@ -1,0 +1,229 @@
+body {
+            font-family: sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f0f2f5; /* Fallback background */
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 400px; /* Desktop max width */
+        }
+
+        .header {
+            background-color: #6a11cb; /* Purple gradient start */
+            background-image: linear-gradient(to right, #6a11cb, #2575fc); /* Purple gradient */
+            color: #fff;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .signup-form {
+            padding: 30px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #6a11cb;
+        }
+
+        .btn {
+            background-color: #6a11cb;
+            background-image: linear-gradient(to right, #6a11cb, #2575fc);
+            color: #fff;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            transition: background-color 0.3s ease;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .links {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .links a {
+            color: #6a11cb;
+            text-decoration: none;
+        }
+
+        .links a:hover {
+            text-decoration: underline;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 20px 0;
+            color: #aaa;
+            font-size: 14px;
+            position: relative;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: "";
+            display: inline-block;
+            width: 35%; /* Adjusted for "Or sign up with" */
+            height: 1px;
+            background-color: #ddd;
+            vertical-align: middle;
+        }
+
+        .divider::before {
+            margin-right: 10px;
+        }
+
+        .divider::after {
+            margin-left: 10px;
+        }
+
+        .social-login {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+            margin-bottom: 20px; /* Added margin for spacing */
+        }
+
+        .social-btn {
+            background-color: #f0f2f5;
+            border: 1px solid #ddd;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .social-btn img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .social-btn:hover {
+            background-color: #e0e0e0;
+        }
+
+        /* Mobile Specific Styles - similar to login */
+        @media (max-width: 600px) {
+            body {
+                 background-color: #6a11cb; /* Purple background for mobile */
+                 background-image: linear-gradient(to bottom, #6a11cb 50%, #ffffff 50%);
+            }
+            .container {
+                max-width: 100%;
+                margin: 0;
+                border-radius: 0;
+                box-shadow: none;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between; 
+            }
+
+            .header { 
+                padding: 60px 20px 80px; 
+                border-bottom-left-radius: 50% 30px; 
+                border-bottom-right-radius: 50% 30px; 
+                position: relative;
+                z-index: 1;
+            }
+             .header h1 {
+                font-size: 28px;
+                font-weight: bold;
+            }
+
+            .signup-form {
+                background-color: #fff; 
+                padding: 40px 20px 20px; 
+                border-top-left-radius: 30px; 
+                border-top-right-radius: 30px; 
+                margin-top: -50px; 
+                position: relative;
+                z-index: 2;
+                flex-grow: 1; 
+            }
+
+            .input-group input {
+                background-color: #f7f7f7;
+                border: 1px solid #eee;
+            }
+            .btn { 
+                padding: 15px;
+                font-size: 18px;
+                font-weight: bold;
+            }
+
+            .social-login {
+                margin-bottom: 25px;
+            }
+
+            .divider {
+                margin-bottom: 15px;
+            }
+
+            .divider::before, .divider::after { /* Hide lines on mobile for social divider */
+                display: none;
+            }
+
+            .links {
+                margin-top: 20px;
+                padding-bottom: 20px; /* Add some padding at the bottom for mobile */
+            }
+            .links a {
+                color: #aaa;
+                 background-color: #fff;
+                 padding: 10px 20px;
+                 border: 1px solid #6a11cb;
+                 border-radius: 4px;
+                 text-decoration: none;
+                 font-weight: bold;
+                 display: inline-block;
+                 width: calc(100% - 40px); 
+            }
+            .links a:hover {
+                background-color: #f8f0ff;
+            }
+        } 
