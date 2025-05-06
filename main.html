@@ -138,6 +138,32 @@
             font-weight: bold;
         }
         
+        /* Upload progress bar styles */
+        .upload-progress-container {
+            margin-top: 15px;
+            display: none;
+        }
+        
+        .upload-progress-bar {
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .upload-progress-bar-fill {
+            height: 100%;
+            background-color: #4CAF50;
+            border-radius: 4px;
+            transition: width 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
         .product-image-preview {
             max-width: 200px;
             max-height: 200px;
@@ -395,6 +421,12 @@
                         <input type="checkbox" id="share-with-all" name="shareWithAll">
                         <label for="share-with-all">Share this file with all users</label>
                     </div>
+                    <div class="upload-progress-container" id="upload-progress-container">
+                        <p>Uploading: <span id="upload-progress-text">0%</span></p>
+                        <div class="upload-progress-bar">
+                            <div class="upload-progress-bar-fill" id="upload-progress-bar-fill" style="width: 0%">0%</div>
+                        </div>
+                    </div>
                     <button type="submit">Upload File <span id="upload-loader" class="loader hidden"></span></button>
                 </form>
             </div>
@@ -598,6 +630,31 @@
                 const uploadLoader = document.getElementById('upload-loader');
                 uploadLoader.classList.remove('hidden');
                 
+                // Show progress container
+                const progressContainer = document.getElementById('upload-progress-container');
+                const progressBarFill = document.getElementById('upload-progress-bar-fill');
+                const progressText = document.getElementById('upload-progress-text');
+                progressContainer.style.display = 'block';
+                progressBarFill.style.width = '0%';
+                progressBarFill.textContent = '0%';
+                progressText.textContent = '0%';
+                
+                // Simulate upload progress
+                let progress = 0;
+                const simulateProgress = setInterval(() => {
+                    progress += 5;
+                    if (progress > 90) { // Only go to 90% with simulation, final 10% when complete
+                        clearInterval(simulateProgress);
+                    }
+                    updateProgress(progress);
+                }, 200);
+                
+                function updateProgress(percent) {
+                    progressBarFill.style.width = percent + '%';
+                    progressBarFill.textContent = percent + '%';
+                    progressText.textContent = percent + '%';
+                }
+                
                 // Create a file object (simulating server upload)
                 const file = fileInput.files[0];
                 const productImage = productImageInput.files[0];
@@ -610,6 +667,10 @@
                     // Then read the main file
                     const fileReader = new FileReader();
                     fileReader.onload = function(fileEvent) {
+                        // Simulate completed upload
+                        clearInterval(simulateProgress);
+                        updateProgress(100);
+                        
                         // Get existing files
                         const files = JSON.parse(localStorage.getItem('files'));
                         
@@ -636,25 +697,40 @@
                         localStorage.setItem('files', JSON.stringify(files));
                         
                         // Reset form and update file list
-                        document.getElementById('upload-form').reset();
-                        document.getElementById('product-image-preview').style.display = 'none';
-                        loadUserFiles();
-                        loadSharedFiles();
-                        uploadLoader.classList.add('hidden');
-                        
-                        alert('File uploaded successfully!');
-                        
-                        // Switch to appropriate tab based on sharing choice
-                        if (shareWithAll) {
-                            document.querySelector('.tab[data-tab="shared-files"]').click();
-                        } else {
-                            document.querySelector('.tab[data-tab="my-files"]').click();
-                        }
+                        setTimeout(() => {
+                            document.getElementById('upload-form').reset();
+                            document.getElementById('product-image-preview').style.display = 'none';
+                            progressContainer.style.display = 'none';
+                            loadUserFiles();
+                            loadSharedFiles();
+                            uploadLoader.classList.add('hidden');
+                            
+                            alert('File uploaded successfully!');
+                            
+                            // Switch to appropriate tab based on sharing choice
+                            if (shareWithAll) {
+                                document.querySelector('.tab[data-tab="shared-files"]').click();
+                            } else {
+                                document.querySelector('.tab[data-tab="my-files"]').click();
+                            }
+                        }, 500); // Short delay to show 100% completion
                     };
                     
                     fileReader.onerror = function() {
+                        clearInterval(simulateProgress);
+                        progressContainer.style.display = 'none';
                         alert('Error reading file');
                         uploadLoader.classList.add('hidden');
+                    };
+                    
+                    // Set up progress handling for large files
+                    fileReader.onprogress = function(e) {
+                        if (e.lengthComputable) {
+                            const percentLoaded = Math.round((e.loaded / e.total) * 100);
+                            if (percentLoaded > 90) { // Blend with our simulation
+                                updateProgress(percentLoaded);
+                            }
+                        }
                     };
                     
                     // Read file as data URL (base64)
@@ -662,6 +738,8 @@
                 };
                 
                 imageReader.onerror = function() {
+                    clearInterval(simulateProgress);
+                    progressContainer.style.display = 'none';
                     alert('Error reading product image');
                     uploadLoader.classList.add('hidden');
                 };
@@ -769,6 +847,15 @@
                         alert('File updated successfully!');
                     }
                 }
+                
+                // After file is updated, ensure we refresh both tabs
+                setTimeout(() => {
+                    // Refresh the "My Files" tab
+                    loadUserFiles();
+                    
+                    // Make sure we refresh the shared files tab as well
+                    loadSharedFiles();
+                }, 100);
             });
             
             // Close modal when clicking the X
@@ -937,10 +1024,13 @@
                 sharedFilesLoader.classList.remove('hidden');
                 
                 // Get files from localStorage
-                const files = JSON.parse(localStorage.getItem('files'));
+                const files = JSON.parse(localStorage.getItem('files')) || [];
                 
-                // Filter files that are shared
+                // Filter files that are shared - ensure we're correctly checking the shared flag
                 let sharedFiles = files.filter(file => file.shared === true);
+                
+                console.log('Total files:', files.length);
+                console.log('Shared files found:', sharedFiles.length);
                 
                 // Get the active category filter
                 const activeFilter = document.querySelector('.filter-btn.active').getAttribute('data-category');
@@ -971,87 +1061,45 @@
                             sharedFilesContainer.innerHTML = '<p>There are no shared files available.</p>';
                         }
                     } else {
-                        // Group files by category
-                        const categorizedFiles = {
-                            windows: sharedFiles.filter(file => file.category === 'windows'),
-                            android: sharedFiles.filter(file => file.category === 'android'),
-                            os: sharedFiles.filter(file => file.category === 'os')
-                        };
-                        
-                        // Create category sections
-                        ['windows', 'android', 'os'].forEach(category => {
-                            if (categorizedFiles[category].length > 0) {
-                                const categoryGroup = document.createElement('div');
-                                categoryGroup.className = `category-group ${category}-category`;
-                                
-                                let categoryTitle = '';
-                                switch(category) {
-                                    case 'windows': categoryTitle = 'Windows Software'; break;
-                                    case 'android': categoryTitle = 'Android Applications'; break;
-                                    case 'os': categoryTitle = 'Operating Systems'; break;
+                        // If we're showing all categories, group by category
+                        if (activeFilter === 'all') {
+                            // Group files by category
+                            const categorizedFiles = {
+                                windows: sharedFiles.filter(file => file.category === 'windows'),
+                                android: sharedFiles.filter(file => file.category === 'android'),
+                                os: sharedFiles.filter(file => file.category === 'os')
+                            };
+                            
+                            // Create category sections
+                            ['windows', 'android', 'os'].forEach(category => {
+                                if (categorizedFiles[category].length > 0) {
+                                    const categoryGroup = document.createElement('div');
+                                    categoryGroup.className = `category-group ${category}-category`;
+                                    
+                                    let categoryTitle = '';
+                                    switch(category) {
+                                        case 'windows': categoryTitle = 'Windows Software'; break;
+                                        case 'android': categoryTitle = 'Android Applications'; break;
+                                        case 'os': categoryTitle = 'Operating Systems'; break;
+                                    }
+                                    
+                                    categoryGroup.innerHTML = `<h3>${categoryTitle}</h3>`;
+                                    const categoryGrid = document.createElement('div');
+                                    categoryGrid.className = 'file-grid';
+                                    
+                                    renderSharedFilesInGrid(categorizedFiles[category], categoryGrid);
+                                    
+                                    categoryGroup.appendChild(categoryGrid);
+                                    sharedFilesContainer.appendChild(categoryGroup);
                                 }
-                                
-                                categoryGroup.innerHTML = `<h3>${categoryTitle}</h3>`;
-                                const categoryGrid = document.createElement('div');
-                                categoryGrid.className = 'file-grid';
-                                
-                                categorizedFiles[category].forEach(file => {
-                                    const fileElement = document.createElement('div');
-                                    fileElement.className = 'file-item';
-                                    
-                                    const isOwnFile = file.userId === user.id;
-                                    
-                                    let fileHeader = `<h4>${file.displayName || file.originalName}`;
-                                    if (file.shared) {
-                                        fileHeader += `<span class="shared-file-indicator">Shared</span>`;
-                                    }
-                                    
-                                    // Add category badge
-                                    if (file.category) {
-                                        let categoryClass = '';
-                                        let categoryText = '';
-                                        
-                                        switch(file.category) {
-                                            case 'windows':
-                                                categoryClass = 'category-windows';
-                                                categoryText = 'Windows Software';
-                                                break;
-                                            case 'android':
-                                                categoryClass = 'category-android';
-                                                categoryText = 'Android App';
-                                                break;
-                                            case 'os':
-                                                categoryClass = 'category-os';
-                                                categoryText = 'OS';
-                                                break;
-                                        }
-                                        
-                                        fileHeader += `<span class="category-badge ${categoryClass}">${categoryText}</span>`;
-                                    }
-                                    
-                                    fileHeader += `</h4>`;
-                                    
-                                    fileElement.innerHTML = `
-                                        ${fileHeader}
-                                        <img src="${file.productImage}" alt="Product Image">
-                                        <p>${file.description || ''}</p>
-                                        <p>Uploaded by: ${file.uploader || 'Unknown'}</p>
-                                        <p>Type: ${file.fileType}</p>
-                                        <p>Size: ${formatFileSize(file.fileSize)}</p>
-                                        <p>Uploaded: ${new Date(file.uploadDate).toLocaleString()}</p>
-                                        <div class="file-actions">
-                                            <button class="download-btn" data-id="${file.id}">Download</button>
-                                            ${isOwnFile ? `<button class="edit-btn" data-id="${file.id}">Edit</button>` : ''}
-                                            ${isOwnFile ? `<button class="delete-btn" data-id="${file.id}">Delete</button>` : ''}
-                                        </div>
-                                    `;
-                                    categoryGrid.appendChild(fileElement);
-                                });
-                                
-                                categoryGroup.appendChild(categoryGrid);
-                                sharedFilesContainer.appendChild(categoryGroup);
-                            }
-                        });
+                            });
+                        } else {
+                            // If a category is selected, just show a simple grid
+                            const fileGrid = document.createElement('div');
+                            fileGrid.className = 'file-grid';
+                            renderSharedFilesInGrid(sharedFiles, fileGrid);
+                            sharedFilesContainer.appendChild(fileGrid);
+                        }
                         
                         // Add event listeners to download buttons
                         document.querySelectorAll('#shared-files-container .download-btn').forEach(button => {
@@ -1080,6 +1128,62 @@
                     
                     sharedFilesLoader.classList.add('hidden');
                 }, 500); // Small delay to show loading indicator
+            }
+            
+            // Helper function to render shared files in a grid
+            function renderSharedFilesInGrid(files, gridElement) {
+                files.forEach(file => {
+                    const fileElement = document.createElement('div');
+                    fileElement.className = 'file-item';
+                    
+                    const isOwnFile = file.userId === user.id;
+                    
+                    let fileHeader = `<h4>${file.displayName || file.originalName}`;
+                    if (file.shared) {
+                        fileHeader += `<span class="shared-file-indicator">Shared</span>`;
+                    }
+                    
+                    // Add category badge
+                    if (file.category) {
+                        let categoryClass = '';
+                        let categoryText = '';
+                        
+                        switch(file.category) {
+                            case 'windows':
+                                categoryClass = 'category-windows';
+                                categoryText = 'Windows Software';
+                                break;
+                            case 'android':
+                                categoryClass = 'category-android';
+                                categoryText = 'Android App';
+                                break;
+                            case 'os':
+                                categoryClass = 'category-os';
+                                categoryText = 'OS';
+                                break;
+                        }
+                        
+                        fileHeader += `<span class="category-badge ${categoryClass}">${categoryText}</span>`;
+                    }
+                    
+                    fileHeader += `</h4>`;
+                    
+                    fileElement.innerHTML = `
+                        ${fileHeader}
+                        <img src="${file.productImage}" alt="Product Image">
+                        <p>${file.description || ''}</p>
+                        <p>Uploaded by: ${file.uploader || 'Unknown'}</p>
+                        <p>Type: ${file.fileType}</p>
+                        <p>Size: ${formatFileSize(file.fileSize)}</p>
+                        <p>Uploaded: ${new Date(file.uploadDate).toLocaleString()}</p>
+                        <div class="file-actions">
+                            <button class="download-btn" data-id="${file.id}">Download</button>
+                            ${isOwnFile ? `<button class="edit-btn" data-id="${file.id}">Edit</button>` : ''}
+                            ${isOwnFile ? `<button class="delete-btn" data-id="${file.id}">Delete</button>` : ''}
+                        </div>
+                    `;
+                    gridElement.appendChild(fileElement);
+                });
             }
             
             // Function to download a file
