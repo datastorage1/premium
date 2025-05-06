@@ -158,6 +158,42 @@
             margin-bottom: 10px;
             border-radius: 4px;
         }
+        
+        .search-container {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .search-container input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        
+        .search-container button {
+            margin-left: 10px;
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .search-container button:hover {
+            background-color: #45a049;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
@@ -214,6 +250,10 @@
             
             <div id="user-files" class="tab-content" data-tab="my-files">
                 <h3>Your Uploaded Files</h3>
+                <div class="search-container">
+                    <input type="text" id="my-files-search" placeholder="Search your files by name, description or type...">
+                    <button id="my-files-search-btn">Search</button>
+                </div>
                 <div id="files-loader" class="loader hidden"></div>
                 <div class="file-grid" id="files-container">
                     <!-- Files will be dynamically loaded here -->
@@ -222,6 +262,10 @@
             
             <div id="shared-files" class="tab-content" data-tab="shared-files">
                 <h3>Files Shared By All Users</h3>
+                <div class="search-container">
+                    <input type="text" id="shared-files-search" placeholder="Search shared files by name, description or type...">
+                    <button id="shared-files-search-btn">Search</button>
+                </div>
                 <div id="shared-files-loader" class="loader hidden"></div>
                 <div class="file-grid" id="shared-files-container">
                     <!-- Shared files will be dynamically loaded here -->
@@ -285,6 +329,31 @@
             // Load user files initially
             loadUserFiles();
             loadSharedFiles();
+            
+            // Set up search functionality
+            document.getElementById('my-files-search-btn').addEventListener('click', function() {
+                const searchTerm = document.getElementById('my-files-search').value.trim().toLowerCase();
+                searchUserFiles(searchTerm);
+            });
+            
+            document.getElementById('my-files-search').addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    const searchTerm = this.value.trim().toLowerCase();
+                    searchUserFiles(searchTerm);
+                }
+            });
+            
+            document.getElementById('shared-files-search-btn').addEventListener('click', function() {
+                const searchTerm = document.getElementById('shared-files-search').value.trim().toLowerCase();
+                searchSharedFiles(searchTerm);
+            });
+            
+            document.getElementById('shared-files-search').addEventListener('keyup', function(e) {
+                if (e.key === 'Enter') {
+                    const searchTerm = this.value.trim().toLowerCase();
+                    searchSharedFiles(searchTerm);
+                }
+            });
             
             // Handle file upload
             document.getElementById('upload-form').addEventListener('submit', function(event) {
@@ -397,8 +466,8 @@
                 }
             });
             
-            // Function to load user files
-            function loadUserFiles() {
+            // Search user files function
+            function searchUserFiles(searchTerm) {
                 const filesContainer = document.getElementById('files-container');
                 const filesLoader = document.getElementById('files-loader');
                 
@@ -408,12 +477,26 @@
                 // Get files from localStorage
                 const files = JSON.parse(localStorage.getItem('files'));
                 
-                // Filter files for current user
-                const userFiles = files.filter(file => file.userId === user.id);
+                // Filter files for current user and matching search term
+                let userFiles = files.filter(file => file.userId === user.id);
+                
+                // If there's a search term, filter by it
+                if (searchTerm) {
+                    userFiles = userFiles.filter(file => 
+                        (file.displayName && file.displayName.toLowerCase().includes(searchTerm)) || 
+                        (file.originalName && file.originalName.toLowerCase().includes(searchTerm)) || 
+                        (file.description && file.description.toLowerCase().includes(searchTerm)) || 
+                        (file.fileType && file.fileType.toLowerCase().includes(searchTerm))
+                    );
+                }
                 
                 setTimeout(() => {
                     if (userFiles.length === 0) {
-                        filesContainer.innerHTML = '<p>You have not uploaded any files yet.</p>';
+                        if (searchTerm) {
+                            filesContainer.innerHTML = `<div class="no-results">No files found matching "${searchTerm}"</div>`;
+                        } else {
+                            filesContainer.innerHTML = '<p>You have not uploaded any files yet.</p>';
+                        }
                     } else {
                         userFiles.forEach(file => {
                             const fileElement = document.createElement('div');
@@ -461,8 +544,8 @@
                 }, 500); // Small delay to show loading indicator
             }
             
-            // Function to load shared files
-            function loadSharedFiles() {
+            // Search shared files function
+            function searchSharedFiles(searchTerm) {
                 const sharedFilesContainer = document.getElementById('shared-files-container');
                 const sharedFilesLoader = document.getElementById('shared-files-loader');
                 
@@ -472,12 +555,27 @@
                 // Get files from localStorage
                 const files = JSON.parse(localStorage.getItem('files'));
                 
-                // Filter files that are shared by other users
-                const sharedFiles = files.filter(file => file.shared === true);
+                // Filter files that are shared
+                let sharedFiles = files.filter(file => file.shared === true);
+                
+                // If there's a search term, filter by it
+                if (searchTerm) {
+                    sharedFiles = sharedFiles.filter(file => 
+                        (file.displayName && file.displayName.toLowerCase().includes(searchTerm)) || 
+                        (file.originalName && file.originalName.toLowerCase().includes(searchTerm)) || 
+                        (file.description && file.description.toLowerCase().includes(searchTerm)) || 
+                        (file.fileType && file.fileType.toLowerCase().includes(searchTerm)) ||
+                        (file.uploader && file.uploader.toLowerCase().includes(searchTerm))
+                    );
+                }
                 
                 setTimeout(() => {
                     if (sharedFiles.length === 0) {
-                        sharedFilesContainer.innerHTML = '<p>There are no shared files available.</p>';
+                        if (searchTerm) {
+                            sharedFilesContainer.innerHTML = `<div class="no-results">No shared files found matching "${searchTerm}"</div>`;
+                        } else {
+                            sharedFilesContainer.innerHTML = '<p>There are no shared files available.</p>';
+                        }
                     } else {
                         sharedFiles.forEach(file => {
                             const fileElement = document.createElement('div');
@@ -561,6 +659,18 @@
                         alert('File deleted successfully!');
                     }
                 }
+            }
+            
+            // Function to load user files
+            function loadUserFiles() {
+                const searchTerm = document.getElementById('my-files-search').value.trim().toLowerCase();
+                searchUserFiles(searchTerm);
+            }
+            
+            // Function to load shared files
+            function loadSharedFiles() {
+                const searchTerm = document.getElementById('shared-files-search').value.trim().toLowerCase();
+                searchSharedFiles(searchTerm);
             }
             
             // Helper function to format file size
