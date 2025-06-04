@@ -1,0 +1,627 @@
+:root {
+    --primary-color: #1a237e;
+    --secondary-color: #4caf50;
+    --accent-color: #ff9800;
+    --text-color: #333;
+    --light-bg: #f5f5f5;
+    --white: #ffffff;
+    --ipl-blue: #004ba0;
+    --ipl-orange: #ff9933;
+    --ipl-green: #138808;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background: var(--light-bg);
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Language Switch */
+.language-switch {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+.lang-btn {
+    background: var(--primary-color);
+    color: var(--white);
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-weight: 600;
+    text-shadow: 
+        -0.5px -0.5px 0 rgba(0,0,0,0.2),
+        0.5px -0.5px 0 rgba(0,0,0,0.2),
+        -0.5px 0.5px 0 rgba(0,0,0,0.2),
+        0.5px 0.5px 0 rgba(0,0,0,0.2);
+    transition: transform 0.3s ease;
+}
+
+.lang-btn:hover {
+    transform: scale(1.05);
+}
+
+/* Hero Section */
+.hero {
+    background: linear-gradient(135deg, var(--ipl-blue), var(--ipl-green));
+    color: var(--white);
+    text-align: center;
+    padding: 100px 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('cricket-pattern.png');
+    opacity: 0.1;
+    animation: slide 20s linear infinite;
+}
+
+@keyframes slide {
+    from { background-position: 0 0; }
+    to { background-position: 100% 100%; }
+}
+
+.logo-container {
+    margin-bottom: 30px;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+}
+
+.logo {
+    max-width: 200px;
+    height: auto;
+    border-radius: 50%;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+}
+
+.title {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    text-shadow: 
+        -1px -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        1px 1px 0 #000,
+        2px 2px 4px rgba(0,0,0,0.5),
+        0 0 10px rgba(0,0,0,0.5);
+    -webkit-text-stroke: 1px rgba(0,0,0,0.5);
+    animation: fadeInUp 1s ease-out;
+    position: relative;
+    font-weight: 700;
+}
+
+.subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 30px;
+    text-shadow: 
+        -1px -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        1px 1px 0 #000,
+        2px 2px 4px rgba(0,0,0,0.5),
+        0 0 8px rgba(0,0,0,0.5);
+    -webkit-text-stroke: 0.5px rgba(0,0,0,0.5);
+    animation: fadeInUp 1s ease-out 0.3s backwards;
+    position: relative;
+    font-weight: 600;
+}
+
+.date-badge {
+    background: var(--accent-color);
+    display: inline-block;
+    padding: 15px 30px;
+    border-radius: 30px;
+    font-size: 1.2rem;
+    text-shadow: 
+        -1px -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        1px 1px 0 #000,
+        2px 2px 4px rgba(0,0,0,0.5);
+    -webkit-text-stroke: 0.5px rgba(0,0,0,0.5);
+    animation: fadeInUp 1s ease-out 0.6s backwards;
+    position: relative;
+    font-weight: 600;
+    border: 2px solid rgba(0,0,0,0.2);
+}
+
+/* Tournament Details */
+.tournament-details {
+    padding: 80px 0;
+    background: var(--white);
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.info-card {
+    background: var(--white);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    text-align: center;
+    transition: all 0.3s ease;
+    border: 2px solid var(--ipl-orange);
+}
+
+.info-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    border-color: var(--ipl-blue);
+}
+
+.info-card i {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+
+.info-card h3 {
+    color: var(--primary-color);
+    text-shadow: 
+        -0.5px -0.5px 0 rgba(0,0,0,0.2),
+        0.5px -0.5px 0 rgba(0,0,0,0.2),
+        -0.5px 0.5px 0 rgba(0,0,0,0.2),
+        0.5px 0.5px 0 rgba(0,0,0,0.2);
+    font-weight: 600;
+}
+
+.info-card p {
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+/* Committee Section */
+.committee {
+    padding: 80px 0;
+    background: var(--light-bg);
+}
+
+.committee-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.committee-member {
+    background: var(--white);
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    border: 2px solid var(--ipl-green);
+}
+
+.committee-member:hover {
+    transform: scale(1.05);
+    border-color: var(--ipl-orange);
+}
+
+.committee-member i {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.committee-member p {
+    color: var(--text-color);
+    font-weight: 600;
+    text-shadow: 
+        -0.5px -0.5px 0 rgba(255,255,255,0.8),
+        0.5px -0.5px 0 rgba(255,255,255,0.8),
+        -0.5px 0.5px 0 rgba(255,255,255,0.8),
+        0.5px 0.5px 0 rgba(255,255,255,0.8);
+}
+
+/* Contact Section */
+.contact {
+    padding: 80px 0;
+    background: var(--white);
+}
+
+.contact-info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 40px;
+    margin-top: 40px;
+}
+
+.phone-numbers, .venue {
+    background: var(--light-bg);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.phone-numbers h3, .venue h3 {
+    color: var(--primary-color);
+    text-shadow: 
+        -0.5px -0.5px 0 rgba(0,0,0,0.2),
+        0.5px -0.5px 0 rgba(0,0,0,0.2),
+        -0.5px 0.5px 0 rgba(0,0,0,0.2),
+        0.5px 0.5px 0 rgba(0,0,0,0.2);
+    font-weight: 600;
+}
+
+.phone-numbers p, .venue p {
+    color: var(--text-color);
+    font-weight: 500;
+    text-shadow: 
+        -0.5px -0.5px 0 rgba(255,255,255,0.8),
+        0.5px -0.5px 0 rgba(255,255,255,0.8),
+        -0.5px 0.5px 0 rgba(255,255,255,0.8),
+        0.5px 0.5px 0 rgba(255,255,255,0.8);
+}
+
+.phone-numbers i, .venue i {
+    color: var(--primary-color);
+    margin-right: 10px;
+}
+
+/* Footer */
+footer {
+    background: var(--primary-color);
+    color: var(--white);
+    padding: 20px 0;
+    text-align: center;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .title {
+        font-size: 2.5rem;
+    }
+    
+    .subtitle {
+        font-size: 1.2rem;
+    }
+    
+    .info-grid, .committee-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .contact-info {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Cricket Ball Animation */
+.cricket-ball {
+    position: fixed;
+    width: 30px;
+    height: 30px;
+    background: #ff5722;
+    border-radius: 50%;
+    animation: bounce 2s infinite;
+    z-index: -1;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-100px); }
+}
+
+/* Welcome Note Section */
+.welcome-note {
+    padding: 80px 0;
+    background: var(--white);
+}
+
+.welcome-content {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 40px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.welcome-text, .invitation-letter {
+    background: var(--light-bg);
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.welcome-text:hover, .invitation-letter:hover {
+    transform: translateY(-5px);
+}
+
+.welcome-text h2, .invitation-letter h2 {
+    color: var(--primary-color);
+    text-shadow: 
+        -0.5px -0.5px 0 rgba(0,0,0,0.2),
+        0.5px -0.5px 0 rgba(0,0,0,0.2),
+        -0.5px 0.5px 0 rgba(0,0,0,0.2),
+        0.5px 0.5px 0 rgba(0,0,0,0.2);
+    font-weight: 700;
+    font-size: 2rem;
+    margin-bottom: 20px;
+    text-align: center;
+    position: relative;
+    padding-bottom: 15px;
+}
+
+.welcome-text h2::after, .invitation-letter h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    height: 3px;
+    background: var(--accent-color);
+}
+
+.welcome-text p, .invitation-letter p {
+    color: var(--text-color);
+    font-weight: 500;
+    text-shadow: 
+        -0.5px -0.5px 0 rgba(255,255,255,0.8),
+        0.5px -0.5px 0 rgba(255,255,255,0.8),
+        -0.5px 0.5px 0 rgba(255,255,255,0.8),
+        0.5px 0.5px 0 rgba(255,255,255,0.8);
+    margin-bottom: 20px;
+    line-height: 1.8;
+    font-size: 1.1rem;
+}
+
+.letter-content {
+    background: var(--white);
+    padding: 30px;
+    border-radius: 15px;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+}
+
+.letter-content ul {
+    list-style: none;
+    margin: 20px 0;
+    padding-left: 20px;
+}
+
+.letter-content li {
+    margin-bottom: 10px;
+    position: relative;
+    padding-left: 25px;
+}
+
+.letter-content li::before {
+    content: '•';
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    position: absolute;
+    left: 0;
+    top: -5px;
+}
+
+.letter-content p:last-child {
+    margin-top: 30px;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+    .welcome-content {
+        grid-template-columns: 1fr;
+    }
+    
+    .welcome-text, .invitation-letter {
+        padding: 20px;
+    }
+    
+    .welcome-text h2, .invitation-letter h2 {
+        font-size: 1.8rem;
+    }
+    
+    .welcome-text p, .invitation-letter p {
+        font-size: 1rem;
+    }
+}
+
+/* Welcome Overlay */
+.welcome-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--ipl-blue), var(--ipl-green));
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: fadeOut 3s ease-in-out forwards;
+    animation-delay: 4s;
+}
+
+.welcome-content {
+    text-align: center;
+    color: var(--white);
+    animation: scaleIn 1s ease-out;
+    text-shadow: 
+        -1px -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        1px 1px 0 #000,
+        0 0 8px rgba(0,0,0,0.5);
+}
+
+.welcome-logo {
+    margin-bottom: 30px;
+    animation: bounce 2s infinite;
+}
+
+.welcome-logo img {
+    width: 150px;
+    height: auto;
+    border-radius: 50%;
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.3);
+}
+
+.welcome-title {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    text-shadow: 
+        -1px -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        1px 1px 0 #000,
+        2px 2px 4px rgba(0,0,0,0.3),
+        0 0 10px rgba(0,0,0,0.4);
+    -webkit-text-stroke: 1px rgba(0,0,0,0.5);
+    animation: slideIn 1s ease-out;
+    font-weight: 700;
+}
+
+.welcome-subtitle {
+    font-size: 1.5rem;
+    margin-bottom: 30px;
+    text-shadow: 
+        -1px -1px 0 #000,
+        1px -1px 0 #000,
+        -1px 1px 0 #000,
+        1px 1px 0 #000,
+        2px 2px 4px rgba(0,0,0,0.3),
+        0 0 8px rgba(0,0,0,0.4);
+    -webkit-text-stroke: 0.5px rgba(0,0,0,0.5);
+    animation: slideIn 1s ease-out 0.3s backwards;
+    font-weight: 600;
+}
+
+.welcome-animation {
+    position: relative;
+    height: 100px;
+}
+
+.welcome-animation .cricket-ball {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background: var(--ipl-orange);
+    border-radius: 50%;
+    animation: flyBall 2s infinite;
+}
+
+.welcome-animation .cricket-ball:nth-child(1) {
+    left: 20%;
+    animation-delay: 0s;
+}
+
+.welcome-animation .cricket-ball:nth-child(2) {
+    left: 50%;
+    animation-delay: 0.5s;
+}
+
+.welcome-animation .cricket-ball:nth-child(3) {
+    left: 80%;
+    animation-delay: 1s;
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; visibility: hidden; }
+}
+
+@keyframes scaleIn {
+    from { transform: scale(0); }
+    to { transform: scale(1); }
+}
+
+@keyframes slideIn {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes flyBall {
+    0% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-50px) rotate(180deg); }
+    100% { transform: translateY(0) rotate(360deg); }
+}
+
+/* Floating Balls in Hero Section */
+.floating-balls {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+}
+
+.floating-balls .ball {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background: var(--ipl-orange);
+    border-radius: 50%;
+    opacity: 0.6;
+    animation: floatBall 8s infinite;
+}
+
+.floating-balls .ball:nth-child(1) {
+    left: 10%;
+    animation-delay: 0s;
+}
+
+.floating-balls .ball:nth-child(2) {
+    left: 50%;
+    animation-delay: 2s;
+}
+
+.floating-balls .ball:nth-child(3) {
+    left: 80%;
+    animation-delay: 4s;
+}
+
+@keyframes floatBall {
+    0% { transform: translateY(0) translateX(0); }
+    25% { transform: translateY(-100px) translateX(50px); }
+    50% { transform: translateY(0) translateX(100px); }
+    75% { transform: translateY(-100px) translateX(50px); }
+    100% { transform: translateY(0) translateX(0); }
+} 
