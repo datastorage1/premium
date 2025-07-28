@@ -9,7 +9,6 @@
       background: linear-gradient(135deg, #f8f9fc, #e0e7ff);
       margin: 0;
       padding: 0;
-      overflow-x: hidden;
     }
     header {
       background: #6C63FF;
@@ -38,11 +37,9 @@
       font-weight: bold;
       border-radius: 8px;
       cursor: pointer;
-      transition: all 0.3s ease;
     }
     nav button:hover {
       background: #594fd1;
-      transform: scale(1.05);
     }
     section {
       display: none;
@@ -79,17 +76,26 @@
       position: relative;
       display: inline-block;
       margin-top: 20px;
-      overflow: hidden;
     }
     #cropArea {
       border: 2px dashed #6C63FF;
       position: absolute;
       background: rgba(108, 99, 255, 0.1);
       display: none;
-      resize: none;
       width: 270px;
       height: 324px;
-      aspect-ratio: auto;
+      cursor: move;
+      box-sizing: border-box;
+    }
+    #cropArea::after {
+      content: '';
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      bottom: 0;
+      right: 0;
+      background: #6C63FF;
+      cursor: se-resize;
     }
     .btn {
       background: #6C63FF;
@@ -101,11 +107,9 @@
       font-weight: bold;
       cursor: pointer;
       margin: 10px 5px;
-      transition: all 0.3s ease;
     }
     .btn:hover {
       background: #574fd3;
-      transform: translateY(-2px);
     }
     a.download {
       display: inline-block;
@@ -161,7 +165,6 @@
     const cropInput = document.getElementById('cropInput');
     let img = new Image();
     let originalImage = null;
-    let scale = 1, offsetX = 0, offsetY = 0;
 
     cropInput.addEventListener('change', () => {
       const file = cropInput.files[0];
@@ -175,8 +178,8 @@
           cropCanvas.height = img.height;
           cropCtx.drawImage(img, 0, 0);
           cropArea.style.display = 'block';
-          cropArea.style.left = ((img.width - 270) / 2) + 'px';
-          cropArea.style.top = ((img.height - 324) / 2) + 'px';
+          cropArea.style.left = '50px';
+          cropArea.style.top = '50px';
         };
       };
       reader.readAsDataURL(file);
@@ -210,10 +213,49 @@
         cropCanvas.width = img.width;
         cropCanvas.height = img.height;
         cropCtx.drawImage(img, 0, 0);
+        cropArea.style.left = '50px';
+        cropArea.style.top = '50px';
         cropArea.style.display = 'block';
       };
       document.getElementById('downloadCrop').style.display = 'none';
     }
+
+    // Dragging cropArea
+    let isDragging = false;
+    let dragOffsetX, dragOffsetY;
+    cropArea.addEventListener('mousedown', (e) => {
+      if (e.target === cropArea) {
+        isDragging = true;
+        dragOffsetX = e.offsetX;
+        dragOffsetY = e.offsetY;
+      }
+    });
+    window.addEventListener('mouseup', () => isDragging = false);
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const parentRect = cropCanvas.getBoundingClientRect();
+      cropArea.style.left = (e.clientX - parentRect.left - dragOffsetX) + 'px';
+      cropArea.style.top = (e.clientY - parentRect.top - dragOffsetY) + 'px';
+    });
+
+    // Resize via corner
+    let resizing = false;
+    cropArea.addEventListener('mousedown', (e) => {
+      if (e.offsetX > cropArea.clientWidth - 20 && e.offsetY > cropArea.clientHeight - 20) {
+        resizing = true;
+        e.preventDefault();
+      }
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (!resizing) return;
+      const rect = cropArea.getBoundingClientRect();
+      const parentRect = cropCanvas.getBoundingClientRect();
+      const width = e.clientX - rect.left;
+      const height = e.clientY - rect.top;
+      cropArea.style.width = width + 'px';
+      cropArea.style.height = height + 'px';
+    });
+    window.addEventListener('mouseup', () => resizing = false);
 
     function compressImage() {
       const input = document.getElementById('compressInput');
