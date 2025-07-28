@@ -76,17 +76,20 @@
       border-radius: 10px;
       margin-top: 20px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      cursor: grab;
     }
     .canvas-wrapper {
       position: relative;
       display: inline-block;
+      margin-top: 20px;
     }
     #cropArea {
       border: 2px dashed #6C63FF;
       position: absolute;
-      cursor: move;
       background: rgba(108, 99, 255, 0.1);
       display: none;
+      resize: both;
+      overflow: hidden;
     }
     .btn {
       background: #6C63FF;
@@ -97,7 +100,7 @@
       font-size: 1rem;
       font-weight: bold;
       cursor: pointer;
-      margin-top: 15px;
+      margin: 10px 5px;
       transition: all 0.3s ease;
       box-shadow: 0 4px 10px rgba(108, 99, 255, 0.3);
     }
@@ -139,11 +142,14 @@
     <div class="tool">
       <h2>Crop Your Image</h2>
       <input type="file" id="cropInput">
-      <div class="canvas-wrapper">
+      <div class="canvas-wrapper" id="canvasWrapper">
         <canvas id="cropCanvas"></canvas>
         <div id="cropArea"></div>
       </div>
-      <button class="btn" onclick="applyCrop()">Crop Selected Area</button>
+      <div>
+        <button class="btn" onclick="applyCrop()">Crop Selected Area</button>
+        <button class="btn" onclick="resetCrop()">Reset</button>
+      </div>
       <a id="downloadCrop" class="download" style="display:none" download="cropped.png">Download Cropped</a>
     </div>
   </section>  <section id="compressor">
@@ -166,46 +172,72 @@
     const cropCtx = cropCanvas.getContext('2d');
     const cropArea = document.getElementById('cropArea');
     const cropInput = document.getElementById('cropInput');
+    const canvasWrapper = document.getElementById('canvasWrapper');
     let img = new Image();
-    let startX, startY, isDragging = false;
+    let imgOriginal = null;
+    let scale = 1;
+    let offsetX = 0, offsetY = 0;
+    let dragging = false, dragStartX = 0, dragStartY = 0;
 
     cropInput.addEventListener('change', () => {
       if (cropInput.files.length === 0) return;
       const file = cropInput.files[0];
       img.src = URL.createObjectURL(file);
       img.onload = () => {
-        cropCanvas.width = img.width;
-        cropCanvas.height = img.height;
-        cropCtx.drawImage(img, 0, 0);
+        imgOriginal = new Image();
+        imgOriginal.src = img.src;
+        scale = 1;
+        offsetX = 0;
+        offsetY = 0;
+        drawImage();
         cropArea.style.display = 'none';
       };
     });
 
-    cropCanvas.addEventListener('mousedown', e => {
-      const rect = cropCanvas.getBoundingClientRect();
-      startX = e.clientX - rect.left;
-      startY = e.clientY - rect.top;
-      cropArea.style.left = startX + 'px';
-      cropArea.style.top = startY + 'px';
-      cropArea.style.width = '0px';
-      cropArea.style.height = '0px';
-      cropArea.style.display = 'block';
-      isDragging = true;
-    });
+    function drawImage() {
+      cropCanvas.width = img.width;
+      cropCanvas.height = img.height;
+      cropCtx.setTransform(scale, 0, 0, scale, offsetX, offsetY);
+      cropCtx.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
+      cropCtx.drawImage(img, 0, 0);
+    }
 
-    cropCanvas.addEventListener('mousemove', e => {
-      if (!isDragging) return;
-      const rect = cropCanvas.getBoundingClientRect();
-      const currentX = e.clientX - rect.left;
-      const currentY = e.clientY - rect.top;
-      cropArea.style.width = Math.abs(currentX - startX) + 'px';
-      cropArea.style.height = Math.abs(currentY - startY) + 'px';
-      cropArea.style.left = Math.min(currentX, startX) + 'px';
-      cropArea.style.top = Math.min(currentY, startY) + 'px';
+    cropCanvas.addEventListener('mousedown', (e) => {
+      dragging = true;
+      dragStartX = e.offsetX;
+      dragStartY = e.offsetY;
+      cropCanvas.style.cursor = 'grabbing';
     });
 
     cropCanvas.addEventListener('mouseup', () => {
-      isDragging = false;
+      dragging = false;
+      cropCanvas.style.cursor = 'grab';
+    });
+
+    cropCanvas.addEventListener('mousemove', (e) => {
+      if (dragging) {
+        offsetX += e.offsetX - dragStartX;
+        offsetY += e.offsetY - dragStartY;
+        dragStartX = e.offsetX;
+        dragStartY = e.offsetY;
+        drawImage();
+      }
+    });
+
+    cropCanvas.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const zoom = e.deltaY < 0 ? 1.1 : 0.9;
+      scale *= zoom;
+      drawImage();
+    });
+
+    cropCanvas.addEventListener('click', (e) => {
+      const rect = cropCanvas.getBoundingClientRect();
+      cropArea.style.left = (e.clientX - rect.left) + 'px';
+      cropArea.style.top = (e.clientY - rect.top) + 'px';
+      cropArea.style.width = '100px';
+      cropArea.style.height = '100px';
+      cropArea.style.display = 'block';
     });
 
     function applyCrop() {
@@ -215,15 +247,26 @@
       const y = rect.top - canvasRect.top;
       const width = rect.width;
       const height = rect.height;
+      if (width <= 0 || height <= 0) return alert('Please select a crop area.');
       const cropped = cropCtx.getImageData(x, y, width, height);
       cropCanvas.width = width;
       cropCanvas.height = height;
+      cropCtx.setTransform(1, 0, 0, 1, 0, 0);
       cropCtx.putImageData(cropped, 0, 0);
       cropArea.style.display = 'none';
       const url = cropCanvas.toDataURL();
       const link = document.getElementById('downloadCrop');
       link.href = url;
       link.style.display = 'inline-block';
+    }
+
+    function resetCrop() {
+      if (imgOriginal) {
+        img.src = imgOriginal.src;
+        img.onload = drawImage;
+        cropArea.style.display = 'none';
+        document.getElementById('downloadCrop').style.display = 'none';
+      }
     }
 
     function compressImage() {
