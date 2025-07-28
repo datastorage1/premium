@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
   <title>Image Tools | Crop & Compress</title>
   <style>
     body {
@@ -17,7 +17,6 @@
       padding: 30px;
       text-align: center;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      animation: fadeInDown 1s ease;
     }
     nav {
       background: #fff;
@@ -44,12 +43,10 @@
     nav button:hover {
       background: #594fd1;
       transform: scale(1.05);
-      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
     section {
       display: none;
       padding: 30px 20px;
-      animation: fadeIn 0.5s ease;
     }
     section.active {
       display: block;
@@ -76,20 +73,23 @@
       border-radius: 10px;
       margin-top: 20px;
       box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-      cursor: grab;
+      touch-action: none;
     }
     .canvas-wrapper {
       position: relative;
       display: inline-block;
       margin-top: 20px;
+      overflow: hidden;
     }
     #cropArea {
       border: 2px dashed #6C63FF;
       position: absolute;
       background: rgba(108, 99, 255, 0.1);
       display: none;
-      resize: both;
-      overflow: hidden;
+      resize: none;
+      width: 270px;
+      height: 324px;
+      aspect-ratio: auto;
     }
     .btn {
       background: #6C63FF;
@@ -102,7 +102,6 @@
       cursor: pointer;
       margin: 10px 5px;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 10px rgba(108, 99, 255, 0.3);
     }
     .btn:hover {
       background: #574fd3;
@@ -116,41 +115,29 @@
       text-decoration: none;
       padding: 10px 20px;
       border-radius: 8px;
-      transition: background 0.3s ease;
-    }
-    a.download:hover {
-      background: #43a047;
-    }
-    @keyframes fadeIn {
-      from {opacity: 0; transform: translateY(20px);}
-      to {opacity: 1; transform: translateY(0);}
-    }
-    @keyframes fadeInDown {
-      from {opacity: 0; transform: translateY(-20px);}
-      to {opacity: 1; transform: translateY(0);}
     }
   </style>
 </head>
 <body>
   <header>
     <h1>Image Tools</h1>
-    <p>Crop and Compress your images beautifully and fast</p>
+    <p>Crop to Passport Size 4.5x5.4 and Compress Easily</p>
   </header>  <nav>
     <button onclick="showSection('cropper')">Crop Tool</button>
     <button onclick="showSection('compressor')">Compress Tool</button>
   </nav>  <section id="cropper" class="active">
     <div class="tool">
-      <h2>Crop Your Image</h2>
+      <h2>Crop Image to 4.5x5.4 cm</h2>
       <input type="file" id="cropInput">
       <div class="canvas-wrapper" id="canvasWrapper">
         <canvas id="cropCanvas"></canvas>
         <div id="cropArea"></div>
       </div>
       <div>
-        <button class="btn" onclick="applyCrop()">Crop Selected Area</button>
+        <button class="btn" onclick="applyCrop()">Crop Area</button>
         <button class="btn" onclick="resetCrop()">Reset</button>
       </div>
-      <a id="downloadCrop" class="download" style="display:none" download="cropped.png">Download Cropped</a>
+      <a id="downloadCrop" class="download" style="display:none" download="passport-crop.png">Download Cropped</a>
     </div>
   </section>  <section id="compressor">
     <div class="tool">
@@ -160,7 +147,7 @@
       <input type="number" id="quality" step="0.1" min="0.1" max="1" value="0.7">
       <button class="btn" onclick="compressImage()">Compress</button>
       <canvas id="compressCanvas"></canvas>
-      <a id="downloadCompress" class="download" style="display:none" download="compressed.jpg">Download Compressed</a>
+      <a id="downloadCompress" class="download" style="display:none" download="compressed.jpg">Download</a>
     </div>
   </section>  <script>
     function showSection(id) {
@@ -172,72 +159,27 @@
     const cropCtx = cropCanvas.getContext('2d');
     const cropArea = document.getElementById('cropArea');
     const cropInput = document.getElementById('cropInput');
-    const canvasWrapper = document.getElementById('canvasWrapper');
     let img = new Image();
-    let imgOriginal = null;
-    let scale = 1;
-    let offsetX = 0, offsetY = 0;
-    let dragging = false, dragStartX = 0, dragStartY = 0;
+    let originalImage = null;
+    let scale = 1, offsetX = 0, offsetY = 0;
 
     cropInput.addEventListener('change', () => {
-      if (cropInput.files.length === 0) return;
       const file = cropInput.files[0];
-      img.src = URL.createObjectURL(file);
-      img.onload = () => {
-        imgOriginal = new Image();
-        imgOriginal.src = img.src;
-        scale = 1;
-        offsetX = 0;
-        offsetY = 0;
-        drawImage();
-        cropArea.style.display = 'none';
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        img.src = e.target.result;
+        img.onload = function () {
+          originalImage = e.target.result;
+          cropCanvas.width = img.width;
+          cropCanvas.height = img.height;
+          cropCtx.drawImage(img, 0, 0);
+          cropArea.style.display = 'block';
+          cropArea.style.left = ((img.width - 270) / 2) + 'px';
+          cropArea.style.top = ((img.height - 324) / 2) + 'px';
+        };
       };
-    });
-
-    function drawImage() {
-      cropCanvas.width = img.width;
-      cropCanvas.height = img.height;
-      cropCtx.setTransform(scale, 0, 0, scale, offsetX, offsetY);
-      cropCtx.clearRect(0, 0, cropCanvas.width, cropCanvas.height);
-      cropCtx.drawImage(img, 0, 0);
-    }
-
-    cropCanvas.addEventListener('mousedown', (e) => {
-      dragging = true;
-      dragStartX = e.offsetX;
-      dragStartY = e.offsetY;
-      cropCanvas.style.cursor = 'grabbing';
-    });
-
-    cropCanvas.addEventListener('mouseup', () => {
-      dragging = false;
-      cropCanvas.style.cursor = 'grab';
-    });
-
-    cropCanvas.addEventListener('mousemove', (e) => {
-      if (dragging) {
-        offsetX += e.offsetX - dragStartX;
-        offsetY += e.offsetY - dragStartY;
-        dragStartX = e.offsetX;
-        dragStartY = e.offsetY;
-        drawImage();
-      }
-    });
-
-    cropCanvas.addEventListener('wheel', (e) => {
-      e.preventDefault();
-      const zoom = e.deltaY < 0 ? 1.1 : 0.9;
-      scale *= zoom;
-      drawImage();
-    });
-
-    cropCanvas.addEventListener('click', (e) => {
-      const rect = cropCanvas.getBoundingClientRect();
-      cropArea.style.left = (e.clientX - rect.left) + 'px';
-      cropArea.style.top = (e.clientY - rect.top) + 'px';
-      cropArea.style.width = '100px';
-      cropArea.style.height = '100px';
-      cropArea.style.display = 'block';
+      reader.readAsDataURL(file);
     });
 
     function applyCrop() {
@@ -247,13 +189,14 @@
       const y = rect.top - canvasRect.top;
       const width = rect.width;
       const height = rect.height;
-      if (width <= 0 || height <= 0) return alert('Please select a crop area.');
-      const cropped = cropCtx.getImageData(x, y, width, height);
-      cropCanvas.width = width;
-      cropCanvas.height = height;
-      cropCtx.setTransform(1, 0, 0, 1, 0, 0);
-      cropCtx.putImageData(cropped, 0, 0);
-      cropArea.style.display = 'none';
+      const scaleX = cropCanvas.width / canvasRect.width;
+      const scaleY = cropCanvas.height / canvasRect.height;
+
+      const imgData = cropCtx.getImageData(x * scaleX, y * scaleY, width * scaleX, height * scaleY);
+      cropCanvas.width = width * scaleX;
+      cropCanvas.height = height * scaleY;
+      cropCtx.putImageData(imgData, 0, 0);
+
       const url = cropCanvas.toDataURL();
       const link = document.getElementById('downloadCrop');
       link.href = url;
@@ -261,12 +204,15 @@
     }
 
     function resetCrop() {
-      if (imgOriginal) {
-        img.src = imgOriginal.src;
-        img.onload = drawImage;
-        cropArea.style.display = 'none';
-        document.getElementById('downloadCrop').style.display = 'none';
-      }
+      if (!originalImage) return;
+      img.src = originalImage;
+      img.onload = () => {
+        cropCanvas.width = img.width;
+        cropCanvas.height = img.height;
+        cropCtx.drawImage(img, 0, 0);
+        cropArea.style.display = 'block';
+      };
+      document.getElementById('downloadCrop').style.display = 'none';
     }
 
     function compressImage() {
@@ -274,7 +220,7 @@
       const canvas = document.getElementById('compressCanvas');
       const ctx = canvas.getContext('2d');
       const quality = parseFloat(document.getElementById('quality').value);
-      if (input.files.length === 0 || isNaN(quality)) return;
+      if (!input.files.length || isNaN(quality)) return;
       const img = new Image();
       img.onload = () => {
         canvas.width = img.width;
@@ -286,7 +232,7 @@
           link.href = url;
           link.style.display = 'inline-block';
         }, 'image/jpeg', quality);
-      }
+      };
       img.src = URL.createObjectURL(input.files[0]);
     }
   </script></body>
