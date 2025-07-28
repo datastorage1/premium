@@ -2,95 +2,159 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Image Crop & Compress | BG Tools</title>
+  <title>Image Tools | Crop & Compress</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f6fb;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #f8f9fc, #e0e7ff);
       margin: 0;
       padding: 0;
+      overflow-x: hidden;
     }
     header {
       background: #6C63FF;
       color: #fff;
-      padding: 20px;
+      padding: 30px;
       text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      animation: fadeInDown 1s ease;
     }
     nav {
-      background: #444;
+      background: #fff;
       display: flex;
       justify-content: center;
       gap: 20px;
-      padding: 10px;
+      padding: 15px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      position: sticky;
+      top: 0;
+      z-index: 999;
     }
     nav button {
       background: #6C63FF;
       color: #fff;
       border: none;
-      padding: 10px 20px;
+      padding: 10px 25px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 8px;
       cursor: pointer;
-      border-radius: 6px;
+      transition: all 0.3s ease;
+    }
+    nav button:hover {
+      background: #594fd1;
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.2);
     }
     section {
       display: none;
-      padding: 20px;
+      padding: 30px 20px;
+      animation: fadeIn 0.5s ease;
     }
     section.active {
       display: block;
     }
     .tool {
       background: #fff;
-      padding: 20px;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      max-width: 800px;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      max-width: 850px;
       margin: auto;
+      text-align: center;
     }
-    input[type="file"] {
+    input[type="file"], input[type="number"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
       margin: 10px 0;
+      width: 100%;
+      max-width: 300px;
     }
     canvas {
       max-width: 100%;
-      margin-top: 10px;
+      border-radius: 10px;
+      margin-top: 20px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .canvas-wrapper {
+      position: relative;
+      display: inline-block;
     }
     #cropArea {
       border: 2px dashed #6C63FF;
       position: absolute;
       cursor: move;
+      background: rgba(108, 99, 255, 0.1);
+      display: none;
     }
-    .canvas-wrapper {
-      position: relative;
+    .btn {
+      background: #6C63FF;
+      color: #fff;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 15px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 10px rgba(108, 99, 255, 0.3);
+    }
+    .btn:hover {
+      background: #574fd3;
+      transform: translateY(-2px);
+    }
+    a.download {
       display: inline-block;
+      margin-top: 20px;
+      background: #4CAF50;
+      color: white;
+      text-decoration: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      transition: background 0.3s ease;
+    }
+    a.download:hover {
+      background: #43a047;
+    }
+    @keyframes fadeIn {
+      from {opacity: 0; transform: translateY(20px);}
+      to {opacity: 1; transform: translateY(0);}
+    }
+    @keyframes fadeInDown {
+      from {opacity: 0; transform: translateY(-20px);}
+      to {opacity: 1; transform: translateY(0);}
     }
   </style>
 </head>
 <body>
   <header>
     <h1>Image Tools</h1>
-    <p>Crop and Compress your images easily</p>
+    <p>Crop and Compress your images beautifully and fast</p>
   </header>  <nav>
-    <button onclick="showSection('cropper')">Image Cropper</button>
-    <button onclick="showSection('compressor')">Image Compressor</button>
-  </nav>  <!-- Crop Tool Section -->  <section id="cropper" class="active">
+    <button onclick="showSection('cropper')">Crop Tool</button>
+    <button onclick="showSection('compressor')">Compress Tool</button>
+  </nav>  <section id="cropper" class="active">
     <div class="tool">
-      <h2>Interactive Image Cropper</h2>
+      <h2>Crop Your Image</h2>
       <input type="file" id="cropInput">
       <div class="canvas-wrapper">
         <canvas id="cropCanvas"></canvas>
         <div id="cropArea"></div>
       </div>
-      <button onclick="applyCrop()">Crop Selected Area</button>
-      <br><br>
-      <a id="downloadCrop" style="display:none" download="cropped.png">Download Cropped Image</a>
+      <button class="btn" onclick="applyCrop()">Crop Selected Area</button>
+      <a id="downloadCrop" class="download" style="display:none" download="cropped.png">Download Cropped</a>
     </div>
-  </section>  <!-- Compressor Tool Section -->  <section id="compressor">
+  </section>  <section id="compressor">
     <div class="tool">
-      <h2>Image Compressor</h2>
+      <h2>Compress Your Image</h2>
       <input type="file" id="compressInput">
-      <label>Quality (0.1 to 1):</label>
+      <label><strong>Quality (0.1 - 1):</strong></label>
       <input type="number" id="quality" step="0.1" min="0.1" max="1" value="0.7">
-      <button onclick="compressImage()">Compress</button>
+      <button class="btn" onclick="compressImage()">Compress</button>
       <canvas id="compressCanvas"></canvas>
+      <a id="downloadCompress" class="download" style="display:none" download="compressed.jpg">Download Compressed</a>
     </div>
   </section>  <script>
     function showSection(id) {
@@ -98,7 +162,6 @@
       document.getElementById(id).classList.add('active');
     }
 
-    // Interactive Crop Tool
     const cropCanvas = document.getElementById('cropCanvas');
     const cropCtx = cropCanvas.getContext('2d');
     const cropArea = document.getElementById('cropArea');
@@ -160,10 +223,9 @@
       const url = cropCanvas.toDataURL();
       const link = document.getElementById('downloadCrop');
       link.href = url;
-      link.style.display = 'inline';
+      link.style.display = 'inline-block';
     }
 
-    // Image Compressor
     function compressImage() {
       const input = document.getElementById('compressInput');
       const canvas = document.getElementById('compressCanvas');
@@ -177,10 +239,9 @@
         ctx.drawImage(img, 0, 0);
         canvas.toBlob(blob => {
           const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
+          const link = document.getElementById('downloadCompress');
           link.href = url;
-          link.download = 'compressed.jpg';
-          link.click();
+          link.style.display = 'inline-block';
         }, 'image/jpeg', quality);
       }
       img.src = URL.createObjectURL(input.files[0]);
