@@ -2,7 +2,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BG Remover Pro | All Tools</title>
+  <title>Image Crop & Compress | BG Tools</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -43,7 +43,7 @@
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      max-width: 600px;
+      max-width: 800px;
       margin: auto;
     }
     input[type="file"] {
@@ -53,29 +53,35 @@
       max-width: 100%;
       margin-top: 10px;
     }
+    #cropArea {
+      border: 2px dashed #6C63FF;
+      position: absolute;
+      cursor: move;
+    }
+    .canvas-wrapper {
+      position: relative;
+      display: inline-block;
+    }
   </style>
 </head>
 <body>
   <header>
-    <h1>BG Remover Pro</h1>
-    <p>Remove Backgrounds, Crop Images, and Compress Easily</p>
+    <h1>Image Tools</h1>
+    <p>Crop and Compress your images easily</p>
   </header>  <nav>
-    <button onclick="showSection('remover')">Background Remover</button>
     <button onclick="showSection('cropper')">Image Cropper</button>
     <button onclick="showSection('compressor')">Image Compressor</button>
-  </nav>  <!-- Background Remover Section -->  <section id="remover" class="active">
+  </nav>  <!-- Crop Tool Section -->  <section id="cropper" class="active">
     <div class="tool">
-      <h2>Background Remover</h2>
-      <input type="file" id="bgInput">
-      <button onclick="removeBg()">Remove Background</button>
-      <canvas id="bgCanvas"></canvas>
-    </div>
-  </section>  <!-- Crop Tool Section -->  <section id="cropper">
-    <div class="tool">
-      <h2>Image Cropper</h2>
+      <h2>Interactive Image Cropper</h2>
       <input type="file" id="cropInput">
-      <button onclick="cropImage()">Crop to 300x300</button>
-      <canvas id="cropCanvas"></canvas>
+      <div class="canvas-wrapper">
+        <canvas id="cropCanvas"></canvas>
+        <div id="cropArea"></div>
+      </div>
+      <button onclick="applyCrop()">Crop Selected Area</button>
+      <br><br>
+      <a id="downloadCrop" style="display:none" download="cropped.png">Download Cropped Image</a>
     </div>
   </section>  <!-- Compressor Tool Section -->  <section id="compressor">
     <div class="tool">
@@ -92,34 +98,69 @@
       document.getElementById(id).classList.add('active');
     }
 
-    // Background Remover (just load image for demo)
-    function removeBg() {
-      const input = document.getElementById('bgInput');
-      const canvas = document.getElementById('bgCanvas');
-      const ctx = canvas.getContext('2d');
-      if (input.files.length === 0) return;
-      const img = new Image();
-      img.onload = () => {
-        canvas.width = img.width;
-        canvas.height = img.height;
-        ctx.drawImage(img, 0, 0);
-      }
-      img.src = URL.createObjectURL(input.files[0]);
-    }
+    // Interactive Crop Tool
+    const cropCanvas = document.getElementById('cropCanvas');
+    const cropCtx = cropCanvas.getContext('2d');
+    const cropArea = document.getElementById('cropArea');
+    const cropInput = document.getElementById('cropInput');
+    let img = new Image();
+    let startX, startY, isDragging = false;
 
-    // Crop to 300x300
-    function cropImage() {
-      const input = document.getElementById('cropInput');
-      const canvas = document.getElementById('cropCanvas');
-      const ctx = canvas.getContext('2d');
-      if (input.files.length === 0) return;
-      const img = new Image();
+    cropInput.addEventListener('change', () => {
+      if (cropInput.files.length === 0) return;
+      const file = cropInput.files[0];
+      img.src = URL.createObjectURL(file);
       img.onload = () => {
-        canvas.width = 300;
-        canvas.height = 300;
-        ctx.drawImage(img, 0, 0, 300, 300);
-      }
-      img.src = URL.createObjectURL(input.files[0]);
+        cropCanvas.width = img.width;
+        cropCanvas.height = img.height;
+        cropCtx.drawImage(img, 0, 0);
+        cropArea.style.display = 'none';
+      };
+    });
+
+    cropCanvas.addEventListener('mousedown', e => {
+      const rect = cropCanvas.getBoundingClientRect();
+      startX = e.clientX - rect.left;
+      startY = e.clientY - rect.top;
+      cropArea.style.left = startX + 'px';
+      cropArea.style.top = startY + 'px';
+      cropArea.style.width = '0px';
+      cropArea.style.height = '0px';
+      cropArea.style.display = 'block';
+      isDragging = true;
+    });
+
+    cropCanvas.addEventListener('mousemove', e => {
+      if (!isDragging) return;
+      const rect = cropCanvas.getBoundingClientRect();
+      const currentX = e.clientX - rect.left;
+      const currentY = e.clientY - rect.top;
+      cropArea.style.width = Math.abs(currentX - startX) + 'px';
+      cropArea.style.height = Math.abs(currentY - startY) + 'px';
+      cropArea.style.left = Math.min(currentX, startX) + 'px';
+      cropArea.style.top = Math.min(currentY, startY) + 'px';
+    });
+
+    cropCanvas.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    function applyCrop() {
+      const rect = cropArea.getBoundingClientRect();
+      const canvasRect = cropCanvas.getBoundingClientRect();
+      const x = rect.left - canvasRect.left;
+      const y = rect.top - canvasRect.top;
+      const width = rect.width;
+      const height = rect.height;
+      const cropped = cropCtx.getImageData(x, y, width, height);
+      cropCanvas.width = width;
+      cropCanvas.height = height;
+      cropCtx.putImageData(cropped, 0, 0);
+      cropArea.style.display = 'none';
+      const url = cropCanvas.toDataURL();
+      const link = document.getElementById('downloadCrop');
+      link.href = url;
+      link.style.display = 'inline';
     }
 
     // Image Compressor
